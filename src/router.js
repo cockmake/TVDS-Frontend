@@ -26,7 +26,7 @@ export const routes = [
                 meta: {requiresAuth: true} // Mark route as requiring authentication
             },
             {
-                path: '/railway-train-manage',
+                path: '/railway-vehicle-manage',
                 name: '铁路任务管理',
                 component: () => import("./pages/RailwayVehicleManager/index.vue"),
                 meta: {requiresAuth: true} // Mark route as requiring authentication
@@ -44,7 +44,21 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const hide = message.loading('页面加载...', 0);
-    next()
+    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+
+    if (requiresAuth && !isLoggedIn) {
+        // 如果路由需要认证但用户未登录，重定向到登录页
+        message.error('请先登录！').then(() => {
+        })
+        next({path: '/login'});
+    } else {
+        // 其他情况正常放行
+        next();
+    }
+
+    // 确保在 next() 调用后隐藏加载提示
+    // 使用 setTimeout 确保在 DOM 更新后执行
     setTimeout(hide, 0);
 })
 

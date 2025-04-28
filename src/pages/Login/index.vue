@@ -33,7 +33,7 @@ const onFinishFailed = errorInfo => {
     <a-card class="login-card" :bordered="false">
       <template #title>
         <img src="/src/assets/csu-logo.png" alt="Logo" class="login-logo"/>
-        <div class="login-title">TVDS作业管理系统</div>
+        <div class="login-title">TVDS客车作业异常检测系统</div>
       </template>
       <a-form
           :model="formState"
@@ -46,8 +46,7 @@ const onFinishFailed = errorInfo => {
         <a-form-item
             label="用户名"
             name="username"
-            :rules="[{ required: true, message: '请输入用户名!' }]"
-        >
+            :rules="[{ required: true, message: '请输入用户名!' }]">
           <a-input size="large" v-model:value="formState.username" placeholder="请输入用户名">
             <template #prefix>
               <UserOutlined style="color: rgba(0,0,0,.25)"/>

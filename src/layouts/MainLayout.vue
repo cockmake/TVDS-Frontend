@@ -49,7 +49,7 @@ const handleLogout = () => {
           </template>
           <span>模板管理</span>
         </a-menu-item>
-        <a-menu-item key="/railway-train-manage">
+        <a-menu-item key="/railway-vehicle-manage">
           <template #icon>
             <DesktopOutlined/>
           </template>
