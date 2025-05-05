@@ -89,7 +89,14 @@ const deleteConfirm = (record) => {
   })
 }
 const execDetectionTask = (record) => {
-  console.log(record)
+  HTTP.post(
+      `/detection-task/exec/${record.id}`,
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      },
+  )
 }
 const updateVehicleModal = ref(false)
 const previewVehicleVisible = ref(false)
@@ -156,7 +163,7 @@ const previewVehicle = (record) => {
               <a-button>删除</a-button>
             </a-popconfirm>
             <a-divider type="vertical" style="height: 30px"/>
-            <a-button @click="execDetectionTask(record)">开启任务</a-button>
+            <a-button @click="execDetectionTask(record)">创建任务</a-button>
           </div>
         </template>
       </template>

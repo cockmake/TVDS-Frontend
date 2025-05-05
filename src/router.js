@@ -15,22 +15,35 @@ export const routes = [
         children: [
             {
                 path: '/component-manage',
-                name: '模板管理',
+                name: '视觉模板管理',
                 component: () => import("./pages/ComponentManager/index.vue"),
                 meta: {requiresAuth: true} // Mark route as requiring authentication
             },
             {
                 path: '/template-edit/:componentId',
-                name: '模板编辑',
+                name: '视觉模板编辑',
                 component: () => import("./pages/ComponentTemplateImageManager/index.vue"),
                 meta: {requiresAuth: true} // Mark route as requiring authentication
             },
             {
                 path: '/railway-vehicle-manage',
-                name: '铁路任务管理',
+                name: '铁路车辆管理',
                 component: () => import("./pages/RailwayVehicleManager/index.vue"),
                 meta: {requiresAuth: true} // Mark route as requiring authentication
+            },
+            {
+                path: '/detection-task-manage',
+                name: '检测任务管理',
+                component: () => import("./pages/DetectionTaskManager/index.vue"),
+                meta: {requiresAuth: true} // Mark route as requiring authentication
+            },
+            {
+                path: '/detection-result/:taskId',
+                name: '检测结果预览',
+                component: () => import("./pages/DetectionResultPreview/index.vue"),
+                meta: {requiresAuth: true} // Mark route as requiring authentication
             }
+
             // Add other management routes as children here
         ]
     },

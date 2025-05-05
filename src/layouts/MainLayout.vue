@@ -5,7 +5,7 @@ import {
   DesktopOutlined,
   SettingOutlined,
   LogoutOutlined,
-  ToolOutlined, // Added for template edit, might need better icon
+  OrderedListOutlined, // Added for template edit, might need better icon
 } from '@ant-design/icons-vue';
 
 import {message} from 'ant-design-vue';
@@ -43,17 +43,23 @@ const handleLogout = () => {
         <img v-else src="../assets/csu-icon.png" alt="Logo" style="height: 100%;"/>
       </div>
       <a-menu theme="dark" v-model:selectedKeys="selectedKeys" mode="inline" @click="handleMenuClick">
-        <a-menu-item key="/component-manage">
-          <template #icon>
-            <SettingOutlined/>
-          </template>
-          <span>模板管理</span>
-        </a-menu-item>
         <a-menu-item key="/railway-vehicle-manage">
           <template #icon>
             <DesktopOutlined/>
           </template>
-          <span>铁路任务管理</span>
+          <span>铁路车辆管理</span>
+        </a-menu-item>
+        <a-menu-item key="/component-manage">
+          <template #icon>
+            <SettingOutlined/>
+          </template>
+          <span>视觉模板管理</span>
+        </a-menu-item>
+        <a-menu-item key="/detection-task-manage">
+          <template #icon>
+            <OrderedListOutlined/>
+          </template>
+          <span>检测任务管理</span>
         </a-menu-item>
         <a-menu-item key="login" @click.stop="handleLogout"> <!-- Use .stop to prevent navigation -->
           <template #icon>

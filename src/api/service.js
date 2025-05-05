@@ -14,12 +14,17 @@ const HTTP = axios.create({
 // 添加请求拦截器
 HTTP.interceptors.request.use(config => {
     // 在发送请求之前做些什么
-    message.info({
-        content: '请求中...',
-        duration: 1
-    }).then(() => {
+    const notShowLoading = config.notShowLoading;
+    if (notShowLoading) {
+        delete config.notShowLoading;
+    } else {
+        message.info({
+            content: '请求中...',
+            duration: 1
+        }).then(() => {
 
-    })
+        })
+    }
     return config;
 }, error => {
     // 对请求错误做些什么
