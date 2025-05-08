@@ -34,12 +34,14 @@ HTTP.interceptors.request.use(config => {
 HTTP.interceptors.response.use((response) => {
     // 对响应数据做点什么
     if (response.status === 200) {
-        message.success({
-            content: '请求成功',
-            duration: 1
-        }).then(() => {
+        if (!(response.data instanceof Blob)) {
+            message.success({
+                content: '请求成功',
+                duration: 1
+            }).then(() => {
 
-        })
+            })
+        }
         return response.data;
     } else {
         return Promise.reject(response);
