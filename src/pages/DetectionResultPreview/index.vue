@@ -109,6 +109,7 @@ const drawRectAndScroll = async () => {
       img.onload = resolve;
     }
   });
+
   await nextTick(() => {
     const nw = img.naturalWidth, nh = img.naturalHeight;
     const dw = img.clientWidth, dh = img.clientHeight;
@@ -125,8 +126,14 @@ const drawRectAndScroll = async () => {
     const w = (item.x2 - item.x1) * sx, h = (item.y2 - item.y1) * sy;
     ctx.strokeRect(x, y, w, h);
 
-    wrapper.scrollLeft = x - wrapper.clientWidth / 2 + w / 2;
-    wrapper.scrollTop = y - wrapper.clientHeight / 2 + h / 2;
+    // wrapper.scrollLeft = x - wrapper.clientWidth / 2 + w / 2;
+    // wrapper.scrollTop = y - wrapper.clientHeight / 2 + h / 2;
+    // 移动到中心
+    wrapper.scrollTo({
+      left: x - wrapper.clientWidth / 2 + w / 2,
+      top: y - wrapper.clientHeight / 2 + h / 2,
+      behavior: 'smooth',
+    });
 
   })
 };
@@ -222,8 +229,7 @@ const previewVehicle = async (vehicleId) => {
   <a-modal v-model:open="previewVehicleVisible"
            title="行车大图预览"
            :footer="null"
-           width="70%"
-           :mask-closable="false">
+           width="70%">
     <div ref="wrapperRef"
          style="overflow-x: auto; position: relative;">
       <img ref="vehicleImageRef"
