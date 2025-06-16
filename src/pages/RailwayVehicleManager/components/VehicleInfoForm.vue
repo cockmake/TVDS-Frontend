@@ -18,9 +18,14 @@ const labelCol = {
   }
 };
 const vehicleInfo = reactive({
+  imageFile: null,
+  recordStation: '',
+  travelDirection: '',
   vehicleInfo: '',
+  vehicleIdentity: '',
+  bureau: '',
+  section: '',
   vehicleDesc: '',
-  imageFile: null
 })
 
 const fileList = ref([])
@@ -58,7 +63,12 @@ const handleRemove = (file) => {
 let vehicleId = null
 const setVehicleInfo = (data) => {
   vehicleId = data.id
+  vehicleInfo.recordStation = data.recordStation
+  vehicleInfo.travelDirection = data.travelDirection
   vehicleInfo.vehicleInfo = data.vehicleInfo
+  vehicleInfo.vehicleIdentity = data.vehicleIdentity
+  vehicleInfo.bureau = data.bureau
+  vehicleInfo.section = data.section
   vehicleInfo.vehicleDesc = data.vehicleDesc
 }
 const updateVehicle = () => {
@@ -67,7 +77,12 @@ const updateVehicle = () => {
   HTTP.put(
       '/railway-vehicle/' + vehicleId,
       {
+        recordStation: vehicleInfo.recordStation,
+        travelDirection: vehicleInfo.travelDirection,
         vehicleInfo: vehicleInfo.vehicleInfo,
+        vehicleIdentity: vehicleInfo.vehicleIdentity,
+        bureau: vehicleInfo.bureau,
+        section: vehicleInfo.section,
         vehicleDesc: vehicleInfo.vehicleDesc,
       },
       {
@@ -87,7 +102,12 @@ const addVehicle = () => {
   emits('before-submit')
   loading.value = true
   const formData = new FormData()
+  formData.append('recordStation', vehicleInfo.recordStation)
+  formData.append('travelDirection', vehicleInfo.travelDirection)
   formData.append('vehicleInfo', vehicleInfo.vehicleInfo)
+  formData.append('vehicleIdentity', vehicleInfo.vehicleIdentity)
+  formData.append('bureau', vehicleInfo.bureau)
+  formData.append('section', vehicleInfo.section)
   formData.append('vehicleDesc', vehicleInfo.vehicleDesc)
   formData.append('imageFile', vehicleInfo.imageFile)
   HTTP.post(
@@ -107,7 +127,12 @@ const addVehicle = () => {
   })
 }
 const resetForm = () => {
+  vehicleInfo.recordStation = ''
+  vehicleInfo.travelDirection = ''
   vehicleInfo.vehicleInfo = ''
+  vehicleInfo.vehicleIdentity = ''
+  vehicleInfo.bureau = ''
+  vehicleInfo.section = ''
   vehicleInfo.vehicleDesc = ''
   vehicleInfo.imageFile = null
   fileList.value = []
@@ -144,13 +169,36 @@ defineExpose({
         <template #previewIcon></template>
       </a-upload>
     </a-form-item>
-
     <a-form-item
-        label="行车信息"
-        name="vehicleInfo">
-      <a-input v-model:value="vehicleInfo.vehicleInfo" placeholder="请输入行车信息"/>
+        label="探测站"
+        name="recordStation">
+      <a-input v-model:value="vehicleInfo.recordStation" placeholder="请输入探测站"/>
     </a-form-item>
-
+    <a-form-item
+        label="行车方向"
+        name="travelDirection">
+      <a-input v-model:value="vehicleInfo.travelDirection" placeholder="请输入行车方向"/>
+    </a-form-item>
+    <a-form-item
+        label="车次信息"
+        name="vehicleInfo">
+      <a-input v-model:value="vehicleInfo.vehicleInfo" placeholder="请输入车次信息"/>
+    </a-form-item>
+    <a-form-item
+        label="车号信息"
+        name="vehicleIdentity">
+      <a-input v-model:value="vehicleInfo.vehicleIdentity" placeholder="请输入车号信息"/>
+    </a-form-item>
+    <a-form-item
+        label="局信息"
+        name="bureau">
+      <a-input v-model:value="vehicleInfo.bureau" placeholder="请输入局段信息"/>
+    </a-form-item>
+    <a-form-item
+        label="段信息"
+        name="section">
+      <a-input v-model:value="vehicleInfo.section" placeholder="请输入车次信息"/>
+    </a-form-item>
     <a-form-item
         label="行车备注"
         name="vehicleDesc">

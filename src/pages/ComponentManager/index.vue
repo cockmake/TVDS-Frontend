@@ -22,6 +22,13 @@ const columns = ref([
     sortDirections: ['descend', 'ascend'],
   },
   {
+    title: "总数",
+    dataIndex: "totalCount",
+    key: "totalCount",
+    sorter: (a, b) => a.totalCount.localeCompare(b.totalCount),
+    sortDirections: ['descend', 'ascend'],
+  },
+  {
     title: '部件备注',
     dataIndex: 'componentDesc',
     key: 'componentDesc',

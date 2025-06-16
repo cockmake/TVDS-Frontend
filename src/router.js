@@ -43,12 +43,8 @@ export const routes = [
                 component: () => import("./pages/DetectionResultPreview/index.vue"),
                 meta: {requiresAuth: true} // Mark route as requiring authentication
             }
-
-            // Add other management routes as children here
         ]
     },
-    // Optional: Add a 404 page
-    // { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFoundComponent },
 ];
 const router = createRouter({
     history: createWebHashHistory(),

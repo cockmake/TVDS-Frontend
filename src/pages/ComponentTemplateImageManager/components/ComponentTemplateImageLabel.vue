@@ -136,7 +136,9 @@ function onFinish() {
 
 3.鼠标滚轮缩放画布。
 
-4.选中形状，Backspace删除。
+4.取消绘制后，选中形状，Backspace删除。
+
+5.绘制完成后点击完成标记，保存数据。
       </pre>
     </div>
   </div>

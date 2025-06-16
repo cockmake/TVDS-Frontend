@@ -11,13 +11,55 @@ const columns = ref([
     key: 'createdAt',
     sorter: (a, b) => a.createdAt.localeCompare(b.createdAt),
     sortDirections: ['descend', 'ascend'],
+    width: 180
   },
   {
-    title: '行车信息',
+    title: "探测站",
+    dataIndex: "recordStation",
+    key: "recordStation",
+    sorter: (a, b) => a.recordStation.localeCompare(b.recordStation),
+    sortDirections: ['descend', 'ascend'],
+    width: 100
+  },
+  {
+    title: "行车方向",
+    dataIndex: "travelDirection",
+    key: "travelDirection",
+    sorter: (a, b) => a.travelDirection.localeCompare(b.travelDirection),
+    sortDirections: ['descend', 'ascend'],
+    width: 120
+  },
+  {
+    title: '车次信息',
     dataIndex: 'vehicleInfo',
     key: 'vehicleInfo',
     sorter: (a, b) => a.vehicleInfo.localeCompare(b.vehicleInfo),
     sortDirections: ['descend', 'ascend'],
+    width: 120
+  },
+  {
+    title: "车号信息",
+    dataIndex: "vehicleIdentity",
+    key: "vehicleIdentity",
+    sorter: (a, b) => a.vehicleIdentity.localeCompare(b.vehicleIdentity),
+    sortDirections: ['descend', 'ascend'],
+    width: 120
+  },
+  {
+    title: "担当局",
+    dataIndex: "bureau",
+    key: "bureau",
+    sorter: (a, b) => a.bureau.localeCompare(b.bureau),
+    sortDirections: ['descend', 'ascend'],
+    width: 100
+  },
+  {
+    title: "当担段",
+    dataIndex: "section",
+    key: "section",
+    sorter: (a, b) => a.section.localeCompare(b.section),
+    sortDirections: ['descend', 'ascend'],
+    width: 100
   },
   {
     title: '客车备注',
