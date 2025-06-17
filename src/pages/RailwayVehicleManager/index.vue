@@ -195,15 +195,15 @@ const previewVehicle = (record) => {
           <div
               style="display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: center;">
             <a-button @click="previewVehicle(record)">行车预览</a-button>
-            <a-divider type="vertical" style="height: 30px"/>
-            <a-button @click="updateVehicleClick(record)">编辑信息</a-button>
-            <a-divider type="vertical" style="height: 30px"/>
-            <a-popconfirm title="删除该行车？" @confirm="deleteConfirm(record)">
-              <template #icon>
-                <question-circle-outlined style="color: red"/>
-              </template>
-              <a-button>删除</a-button>
-            </a-popconfirm>
+<!--            <a-divider type="vertical" style="height: 30px"/>-->
+<!--            <a-button @click="updateVehicleClick(record)">编辑信息</a-button>-->
+<!--            <a-divider type="vertical" style="height: 30px"/>-->
+<!--            <a-popconfirm title="删除该行车？" @confirm="deleteConfirm(record)">-->
+<!--              <template #icon>-->
+<!--                <question-circle-outlined style="color: red"/>-->
+<!--              </template>-->
+<!--              <a-button>删除</a-button>-->
+<!--            </a-popconfirm>-->
             <a-divider type="vertical" style="height: 30px"/>
             <a-button @click="execDetectionTask(record)">创建任务</a-button>
           </div>
