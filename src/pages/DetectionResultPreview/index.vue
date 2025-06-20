@@ -5,14 +5,10 @@ import {HTTP} from "../../api/service.js";
 
 const route = useRoute();
 const taskId = route.params.taskId;
-const vehicleInfo = reactive({
-  vehicleInfo: '',
-  createdAt: null,
-  updatedAt: null,
-  vehicleId: null,
-})
+
 const componentTypeList = ref([]);
 const selectedComponentId = ref('');
+const selectedComponentName = ref('');
 const componentTypeListComputed = computed(() => {
   return componentTypeList.value.map(item => ({
     label: `${item.componentName}（${item.count}）`,
@@ -21,15 +17,121 @@ const componentTypeListComputed = computed(() => {
   }));
 });
 const detectionResults = ref([]);
-
+/*
+{
+    "resultId": "1934947153232752643",
+    "detectionConf": 0.905952,
+    "isAbnormal": false,
+    "x1": 1131,
+    "y1": 599,
+    "x2": 2066,
+    "y2": 2048,
+    "taskCreatedAt": "2025-06-17 20:11:58",
+    "taskUpdatedAt": "2025-06-17 20:12:05",
+    "vehicleId": "1922625555992150016",
+    "vehicleInfo": "A",
+    "vehicleDesc": "无",
+    "recordStation": "2",
+    "vehicleIdentity": "1",
+    "travelDirection": "1",
+    "bureau": "1",
+    "section": "1",
+    "vehicleCreatedAt": "2025-05-14 20:10:28"
+}
+*/
+const columns = [
+  {
+    title: '入站时间',
+    dataIndex: 'vehicleCreatedAt',
+    key: 'vehicleCreatedAt',
+    sorter: (a, b) => a.vehicleCreatedAt.localeCompare(b.vehicleCreatedAt),
+    sortDirections: ['descend', 'ascend'],
+    width: '150px',
+  },
+  {
+    title: '检测时间',
+    dataIndex: 'taskUpdatedAt',
+    key: 'taskUpdatedAt',
+    sorter: (a, b) => a.taskUpdatedAt.localeCompare(b.taskUpdatedAt),
+    sortDirections: ['descend', 'ascend'],
+    width: '150px',
+  },
+  {
+    title: '车次',
+    dataIndex: 'vehicleInfo',
+    key: 'vehicleInfo',
+    sorter: (a, b) => a.vehicleInfo.localeCompare(b.vehicleInfo),
+    sortDirections: ['descend', 'ascend'],
+    width: '150px',
+  },
+  {
+    title: '探测站',
+    dataIndex: 'recordStation',
+    key: 'recordStation',
+    sorter: (a, b) => a.recordStation.localeCompare(b.recordStation),
+    sortDirections: ['descend', 'ascend'],
+    width: '150px',
+  },
+  {
+    title: '担当局',
+    dataIndex: 'bureau',
+    key: 'bureau',
+    sorter: (a, b) => a.bureau.localeCompare(b.bureau),
+    sortDirections: ['descend', 'ascend'],
+    width: '150px',
+  },
+  {
+    title: "置信度",
+    dataIndex: "detectionConf",
+    key: "detectionConf",
+    customRender: ({text}) => {
+      return `${(text * 100).toFixed(2)}%`;
+    },
+    sorter: (a, b) => a.detectionConf - b.detectionConf,
+    sortDirections: ['descend', 'ascend'],
+    width: '120px',
+  },
+  {
+    title: '故障情况',
+    dataIndex: 'isAbnormal',
+    key: 'isAbnormal',
+    customRender: ({text}) => {
+      return text ? '有故障' : '无故障';
+    },
+    filters: [
+      {text: '有故障', value: true},
+      {text: '无故障', value: false}
+    ],
+    onFilter: (value, record) => record.isAbnormal === value,
+    width: '120px',
+  },
+  {
+    title: "部件起始位置",
+    dataIndex: "x1",
+    key: "x1",
+    sorter: (a, b) => a.x1 - b.x1,
+    sortDirections: ['descend', 'ascend'],
+    width: '120px',
+  },
+  {
+    title: "操作",
+    key: 'action',
+    fixed: 'right',
+    width: 200,
+  }
+];
 // 首次获取所有零部件类型
+const totalRecords = ref(0);
 const getComponentTypes = () => {
   HTTP.get(`/detection-result/${taskId}`)
       .then(res => {
         componentTypeList.value = res.data;
         if (componentTypeList.value.length) {
           selectedComponentId.value = componentTypeList.value[0].componentId;
+          selectedComponentName.value = componentTypeList.value[0].componentName;
+          totalRecords.value = res.data.reduce((sum, item) => sum + item.count, 0);
         }
+
       });
 };
 
@@ -37,13 +139,7 @@ const getComponentTypes = () => {
 const fetchResults = (componentId) => {
   HTTP.get(`/detection-result/${taskId}/${componentId}`)
       .then(res => {
-        detectionResults.value = res.data
-        // 获取图像
-        detectionResults.value.forEach(item => {
-          getImageUrl(item.resultId).then(url => {
-            item.imageUrl = url;
-          });
-        });
+        detectionResults.value = res.data.records || []
       });
 };
 
@@ -62,14 +158,6 @@ let hasObserved = false;
 
 onMounted(() => {
   getComponentTypes();
-  let record = sessionStorage.getItem('taskInfo');
-  if (record) {
-    record = JSON.parse(record);
-    vehicleInfo.vehicleInfo = record.vehicleInfo;
-    vehicleInfo.createdAt = record.createdAt;
-    vehicleInfo.updatedAt = record.updatedAt;
-    vehicleInfo.vehicleId = record.vehicleId;
-  }
   resizeObserver = new ResizeObserver(() => {
     drawRectAndScroll();
   });
@@ -143,7 +231,7 @@ const previewDetectionResult = async (item) => {
   // previewModalVisible.value = true;
   // previewImageUrl.value = item.imageUrl;
   currentItem.value = item
-  await previewVehicle(vehicleInfo.vehicleId);
+  await previewVehicle(item.vehicleId);
   // 监听后会自动触发一次
   if (!hasObserved && wrapperRef.value) {
     resizeObserver.observe(wrapperRef.value);
@@ -165,68 +253,123 @@ const previewVehicle = async (vehicleId) => {
   }
   previewVehicleVisible.value = true;
 };
+const selectedDetectionResult = ref(null);
+const detailModalVisible = ref(false);
+const displayResultDetail = (record) => {
+  getImageUrl(record.resultId).then(url => {
+    record.imageUrl = url;
+    record.componentName = selectedComponentName.value;
+    selectedDetectionResult.value = record;
+    detailModalVisible.value = true;
+  });
+};
 </script>
 
 <template>
   <div>
-    <a-descriptions title="任务信息" bordered style="margin-bottom: 16px;">
-      <a-descriptions-item label="行车信息">
-        {{ vehicleInfo.vehicleInfo }}
-      </a-descriptions-item>
-      <a-descriptions-item label="创建时间">
-        {{ vehicleInfo.createdAt }}
-      </a-descriptions-item>
-      <a-descriptions-item label="更新时间">
-        {{ vehicleInfo.updatedAt }}
-      </a-descriptions-item>
-    </a-descriptions>
-
     <a-segmented
         v-model:value="selectedComponentId"
         :options="componentTypeListComputed"
         style="margin-bottom: 16px;"/>
     <div style="display: flex; flex-wrap: wrap; gap: 16px;">
-      <a-card
-          v-for="item in detectionResults"
-          :key="item.resultId"
-          hoverable
-          @click="previewDetectionResult(item)"
-          style="width: 240px;">
-        <template #cover>
-          <div style="height: 160px; text-align: center;">
-            <img
-                :src="item.imageUrl"
-                alt="检测结果图"
-                style="height: 100%; object-fit: cover;"/>
+      <a-table :data-source="detectionResults"
+               :columns="columns"
+               bordered
+               row-key="id"
+               style="width: 100%"
+               :scroll="{ y: 'calc(100vh - 300px)' }"
+               :pagination="false">
+        <template #title>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>检测结果查询</span>
+            <span>该车辆共 {{ totalRecords }} 条检测结果</span>
           </div>
-
         </template>
-        <a-space direction="vertical" style="margin-top: 8px;">
-          <div>置信度：{{ item.detectionConf }}</div>
-          <div>
-            异常：
-            <span :style="{ color: item.isAbnormal ? 'red' : 'inherit' }">
-              {{ item.isAbnormal ? '是' : '否' }}
-            </span>
-          </div>
-          <div>坐标：({{ item.x1 }}, {{ item.y1 }}) - ({{ item.x2 }}, {{ item.y2 }})</div>
-        </a-space>
-      </a-card>
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'action'">
+            <a-space style="width: 100%; justify-content: center;">
+              <a-button @click="displayResultDetail(record)">
+                查看详情
+              </a-button>
+            </a-space>
+          </template>
+          <template v-if="column.key === 'isAbnormal'">
+            <a-space style="width: 100%; justify-content: center;">
+              <a-tag
+                  :color="record.isAbnormal ? 'red' : 'green'"
+                  style="width: 100%; text-align: center; line-height: 25px;">
+                {{ record.isAbnormal ? '有故障' : '无故障' }}
+              </a-tag>
+            </a-space>
+          </template>
+        </template>
+      </a-table>
     </div>
+
   </div>
-  <!--    单个组件预览暂时不用-->
-  <!--  <a-modal v-model:open="previewModalVisible"-->
-  <!--           title="检测部件预览"-->
-  <!--           :footer="null"-->
-  <!--           :mask-closable="false"-->
-  <!--           destroy-on-close>-->
-  <!--    <div style="display: flex; justify-content: center; align-items: center; height: 50vh;">-->
-  <!--      <img alt="部件预览"-->
-  <!--           style="max-width: 100%; max-height: 100%; object-fit: contain;"-->
-  <!--           :src="previewImageUrl"/>-->
-  <!--    </div>-->
-  <!--  </a-modal>-->
+  <a-modal v-model:open="detailModalVisible"
+           :footer="null"
+           z-index="1000"
+           destroy-on-close
+           width="80%">
+    <a-descriptions title="检测结果详情" bordered>
+      <a-descriptions-item label="车辆入站时间">
+        {{ selectedDetectionResult.vehicleCreatedAt }}
+      </a-descriptions-item>
+      <a-descriptions-item label="检测发起时间">
+        {{ selectedDetectionResult.taskCreatedAt }}
+      </a-descriptions-item>
+      <a-descriptions-item label="检测完成时间">
+        {{ selectedDetectionResult.taskUpdatedAt }}
+      </a-descriptions-item>
+      <a-descriptions-item label="车次">
+        {{ selectedDetectionResult.vehicleInfo }}
+      </a-descriptions-item>
+      <a-descriptions-item label="车号">
+        {{ selectedDetectionResult.vehicleIdentity }}
+      </a-descriptions-item>
+      <a-descriptions-item label="行驶方向">
+        {{ selectedDetectionResult.travelDirection }}
+      </a-descriptions-item>
+      <a-descriptions-item label="探测站">
+        {{ selectedDetectionResult.recordStation }}
+      </a-descriptions-item>
+      <a-descriptions-item label="担当局">
+        {{ selectedDetectionResult.bureau }}
+      </a-descriptions-item>
+      <a-descriptions-item label="检测置信度">
+        {{ (selectedDetectionResult.detectionConf * 100).toFixed(2) }}%
+      </a-descriptions-item>
+      <a-descriptions-item label="零部件位置">
+        ({{ selectedDetectionResult.x1 }}, {{ selectedDetectionResult.y1 }}) -
+        ({{ selectedDetectionResult.x2 }}, {{ selectedDetectionResult.y2 }})
+      </a-descriptions-item>
+      <a-descriptions-item label="故障情况">
+        <a-tag :color="selectedDetectionResult.isAbnormal ? 'red' : 'green'">
+          {{ selectedDetectionResult.isAbnormal ? '有故障' : '无故障' }}
+        </a-tag>
+      </a-descriptions-item>
+      <a-descriptions-item label="车辆备注">
+        {{ selectedDetectionResult.vehicleDesc || '无' }}
+      </a-descriptions-item>
+      <a-descriptions-item label="部件名称">
+        {{ selectedDetectionResult.componentName}}
+      </a-descriptions-item>
+      <a-descriptions-item label="结果图像">
+        <div style="height: 400px; text-align: center;">
+          <img
+              :src="selectedDetectionResult.imageUrl"
+              alt="检测结果图"
+              style="height: 100%; object-fit: cover;"/>
+          <a-button style="margin-left: 50px" @click="previewDetectionResult(selectedDetectionResult)">
+            整体预览
+          </a-button>
+        </div>
+      </a-descriptions-item>
+    </a-descriptions>
+  </a-modal>
   <a-modal v-model:open="previewVehicleVisible"
+           z-index="1001"
            title="行车大图预览"
            :footer="null"
            width="70%">
@@ -243,4 +386,5 @@ const previewVehicle = async (vehicleId) => {
 </template>
 
 <style scoped>
+
 </style>

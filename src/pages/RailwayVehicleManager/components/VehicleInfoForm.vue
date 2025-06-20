@@ -156,18 +156,26 @@ defineExpose({
         required
         label="行车图片"
         name="imageFile">
-      <a-upload
-          :before-upload="beforeUpload"
-          @remove="handleRemove"
-          accept="image/png, image/jpg, image/jpeg"
-          v-model:file-list="fileList"
-          list-type="picture-card">
-        <div v-if="fileList.length < 1">
-          <plus-outlined/>
-          <div style="margin-top: 8px">上传行车图像</div>
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+        <div v-for="(index) in 5"  style="display: flex; flex-direction: column; justify-content: center; align-items: center;  ">
+          <span style="white-space: nowrap; margin-bottom: 8px">方位{{ index }}：</span>
+          <div>
+            <a-upload
+                :before-upload="beforeUpload"
+                @remove="handleRemove"
+                accept="image/png, image/jpg, image/jpeg"
+                v-model:file-list="fileList"
+                list-type="picture-card">
+              <div v-if="fileList.length < 1">
+                <plus-outlined/>
+                <div style="margin-top: 8px">上传行车图像</div>
+              </div>
+              <template #previewIcon></template>
+            </a-upload>
+          </div>
+
         </div>
-        <template #previewIcon></template>
-      </a-upload>
+      </div>
     </a-form-item>
     <a-form-item
         label="探测站"
