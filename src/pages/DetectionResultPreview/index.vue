@@ -6,6 +6,7 @@ import {HTTP} from "../../api/service.js";
 const route = useRoute();
 const taskId = route.params.taskId;
 
+const selectedDirection = ref(0); // 新增：当前选择的方位
 const componentTypeList = ref([]);
 const selectedComponentId = ref('');
 const selectedComponentName = ref('');
@@ -123,7 +124,8 @@ const columns = [
 // 首次获取所有零部件类型
 const totalRecords = ref(0);
 const getComponentTypes = () => {
-  HTTP.get(`/detection-result/${taskId}`)
+
+  HTTP.get(`/detection-result/${taskId}/${selectedDirection.value}`)
       .then(res => {
         componentTypeList.value = res.data;
         if (componentTypeList.value.length) {
@@ -134,20 +136,24 @@ const getComponentTypes = () => {
 
       });
 };
+watch(selectedDirection, () => {
+  // 需要先重置选中的零部件ID
+  selectedComponentId.value = '';
+  getComponentTypes();
 
-// 根据选中组件获取检测结果
-const fetchResults = (componentId) => {
-  HTTP.get(`/detection-result/${taskId}/${componentId}`)
-      .then(res => {
-        detectionResults.value = res.data.records || []
-      });
-};
-
+});
 // 监听分段选择变化
 watch(selectedComponentId, id => {
   if (id) fetchResults(id);
 });
-
+// 根据选中组件获取检测结果
+const fetchResults = (componentId) => {
+  return
+  HTTP.get(`/detection-result/${taskId}/${selectedDirection.value}/${componentId}`)
+      .then(res => {
+        detectionResults.value = res.data.records || []
+      });
+};
 // 新增 ref
 const vehicleImageRef = ref(null);
 const canvasRef = ref(null);
@@ -176,8 +182,6 @@ const getImageUrl = async (resultId) => {
   )
   return URL.createObjectURL(res);
 };
-const previewModalVisible = ref(false);
-const previewImageUrl = ref('');
 
 const currentItem = ref(null)
 const drawRectAndScroll = async () => {
@@ -227,9 +231,6 @@ const drawRectAndScroll = async () => {
 };
 
 const previewDetectionResult = async (item) => {
-  // 单个组件预览暂时不用
-  // previewModalVisible.value = true;
-  // previewImageUrl.value = item.imageUrl;
   currentItem.value = item
   await previewVehicle(item.vehicleId);
   // 监听后会自动触发一次
@@ -244,11 +245,14 @@ const previewVehicleVisible = ref(false);
 const previewVehicle = async (vehicleId) => {
   if (!previewVehicleImage.value) {
     const res = await HTTP.get(
-        `/railway-vehicle/${vehicleId}/preview`, // 使用模板字符串
+        `/railway-vehicle/${vehicleId}/${selectedDirection.value}/preview`, // 使用模板字符串
         {
           responseType: 'blob'
         },
     )
+    if (previewVehicleImage.value) {
+      URL.revokeObjectURL(previewVehicleImage.value);
+    }
     previewVehicleImage.value = URL.createObjectURL(res);
   }
   previewVehicleVisible.value = true;
@@ -267,10 +271,24 @@ const displayResultDetail = (record) => {
 
 <template>
   <div>
-    <a-segmented
-        v-model:value="selectedComponentId"
-        :options="componentTypeListComputed"
-        style="margin-bottom: 16px;"/>
+    <div style="margin-bottom: 16px;">
+      <span style="margin-right: 8px;">车辆方位:</span>
+      <a-radio-group v-model:value="selectedDirection" button-style="solid">
+        <a-radio-button :value="0">方位1</a-radio-button>
+        <a-radio-button :value="1">方位2</a-radio-button>
+        <a-radio-button :value="2">方位3</a-radio-button>
+        <a-radio-button :value="3">方位4</a-radio-button>
+        <a-radio-button :value="4">方位5</a-radio-button>
+      </a-radio-group>
+    </div>
+    <div style="margin-bottom: 16px;">
+      <span style="margin-right: 8px;">部件结果:</span>
+      <a-segmented
+          v-model:value="selectedComponentId"
+          :options="componentTypeListComputed"
+          style="margin-bottom: 16px;"/>
+    </div>
+
     <div style="display: flex; flex-wrap: wrap; gap: 16px;">
       <a-table :data-source="detectionResults"
                :columns="columns"
@@ -309,7 +327,7 @@ const displayResultDetail = (record) => {
   </div>
   <a-modal v-model:open="detailModalVisible"
            :footer="null"
-           z-index="1000"
+           :z-index="1000"
            destroy-on-close
            width="80%">
     <a-descriptions title="检测结果详情" bordered>
@@ -353,7 +371,10 @@ const displayResultDetail = (record) => {
         {{ selectedDetectionResult.vehicleDesc || '无' }}
       </a-descriptions-item>
       <a-descriptions-item label="部件名称">
-        {{ selectedDetectionResult.componentName}}
+        {{ selectedDetectionResult.componentName }}
+      </a-descriptions-item>
+      <a-descriptions-item label="拍摄方位">
+        方位{{ selectedDetectionResult.direction + 1 }}
       </a-descriptions-item>
       <a-descriptions-item label="结果图像">
         <div style="height: 400px; text-align: center;">
@@ -369,7 +390,7 @@ const displayResultDetail = (record) => {
     </a-descriptions>
   </a-modal>
   <a-modal v-model:open="previewVehicleVisible"
-           z-index="1001"
+           :z-index="1001"
            title="行车大图预览"
            :footer="null"
            width="70%">

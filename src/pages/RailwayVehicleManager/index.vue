@@ -143,19 +143,39 @@ const execDetectionTask = (record) => {
 const updateVehicleModal = ref(false)
 const previewVehicleVisible = ref(false)
 const previewVehicleImage = ref('')
-const previewVehicle = (record) => {
+const previewDirection = ref(1)
+const currentPreviewRecordId = ref(null)
+
+const fetchPreviewImage = () => {
+  if (!currentPreviewRecordId.value) return;
   HTTP.get(
-      '/railway-vehicle/' + record.id + '/preview',
+      `/railway-vehicle/${currentPreviewRecordId.value}/${previewDirection.value}/preview`,
       {
         responseType: 'blob'
       },
   ).then((res) => {
-    // 判断是否为Blob类型
-    previewVehicleImage.value = URL.createObjectURL(res)
-    previewVehicleVisible.value = true
+    if (previewVehicleImage.value) {
+      URL.revokeObjectURL(previewVehicleImage.value);
+    }
+    previewVehicleImage.value = URL.createObjectURL(res);
   })
 }
-
+const previewVehicle = (record) => {
+  currentPreviewRecordId.value = record.id;
+  previewDirection.value = 1; // 默认选择第一个方位
+  fetchPreviewImage(); // 获取默认方位的图片
+  previewVehicleVisible.value = true;
+}
+const handlePreviewDirectionChange = () => {
+  fetchPreviewImage(); // 切换方位时重新获取图片
+}
+const handlePreviewClose = () => {
+  if (previewVehicleImage.value) {
+    URL.revokeObjectURL(previewVehicleImage.value);
+    previewVehicleImage.value = '';
+  }
+  currentPreviewRecordId.value = null;
+}
 </script>
 
 <template>
@@ -195,15 +215,15 @@ const previewVehicle = (record) => {
           <div
               style="display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: center;">
             <a-button @click="previewVehicle(record)">行车预览</a-button>
-<!--            <a-divider type="vertical" style="height: 30px"/>-->
-<!--            <a-button @click="updateVehicleClick(record)">编辑信息</a-button>-->
-<!--            <a-divider type="vertical" style="height: 30px"/>-->
-<!--            <a-popconfirm title="删除该行车？" @confirm="deleteConfirm(record)">-->
-<!--              <template #icon>-->
-<!--                <question-circle-outlined style="color: red"/>-->
-<!--              </template>-->
-<!--              <a-button>删除</a-button>-->
-<!--            </a-popconfirm>-->
+            <!--            <a-divider type="vertical" style="height: 30px"/>-->
+            <!--            <a-button @click="updateVehicleClick(record)">编辑信息</a-button>-->
+            <!--            <a-divider type="vertical" style="height: 30px"/>-->
+            <!--            <a-popconfirm title="删除该行车？" @confirm="deleteConfirm(record)">-->
+            <!--              <template #icon>-->
+            <!--                <question-circle-outlined style="color: red"/>-->
+            <!--              </template>-->
+            <!--              <a-button>删除</a-button>-->
+            <!--            </a-popconfirm>-->
             <a-divider type="vertical" style="height: 30px"/>
             <a-button @click="execDetectionTask(record)">创建任务</a-button>
           </div>
@@ -216,12 +236,23 @@ const previewVehicle = (record) => {
     <a-pagination show-quick-jumper :total="totalData" @change="onPageChange"/>
   </div>
   <!--  行车大图预览-->
+  <!--  行车大图预览-->
   <a-modal v-model:open="previewVehicleVisible"
            title="行车大图预览"
            :footer="null"
            width="70%"
            :mask-closable="false"
-           destroy-on-close>
+           destroy-on-close
+           @after-close="handlePreviewClose">
+    <div style="text-align: center; margin-bottom: 16px;">
+      <a-radio-group v-model:value="previewDirection" @change="handlePreviewDirectionChange" button-style="solid">
+        <a-radio-button :value="1">方位1</a-radio-button>
+        <a-radio-button :value="2">方位2</a-radio-button>
+        <a-radio-button :value="3">方位3</a-radio-button>
+        <a-radio-button :value="4">方位4</a-radio-button>
+        <a-radio-button :value="5">方位5</a-radio-button>
+      </a-radio-group>
+    </div>
     <div style="overflow-x: auto">
       <img alt="行车大图"
            :src="previewVehicleImage"

@@ -113,22 +113,6 @@ onMounted(() => {
   fetchTasks();
 });
 
-// --- 操作函数 ---
-const previewVehicleVisible = ref(false);
-const previewVehicleImage = ref('');
-
-// 行车预览
-const previewVehicle = (record) => {
-  HTTP.get(
-      `/railway-vehicle/${record.vehicleId}/preview`, // 使用模板字符串
-      {
-        responseType: 'blob'
-      },
-  ).then((res) => {
-    previewVehicleImage.value = URL.createObjectURL(res);
-    previewVehicleVisible.value = true;
-  })
-};
 
 // 删除任务
 const deleteTask = (record) => {
@@ -209,9 +193,8 @@ const retryTask = (record) => {
         </template>
         <template v-if="column.key === 'action'">
           <div style="display: flex; flex-wrap: nowrap; gap: 8px; justify-content: center;">
-            <a-button @click="previewVehicle(record)">行车预览</a-button>
-            <a-button v-if="record.taskStatus === 2" type="primary" @click="viewResults(record)">查看结果
-            </a-button>
+
+            <a-button v-if="record.taskStatus === 2" type="primary" @click="viewResults(record)">查看结果</a-button>
             <a-button v-if="record.taskStatus === 3" @click="retryTask(record)">重试</a-button>
             <a-button v-if="record.taskStatus === 1" loading>
               进行中...
@@ -239,22 +222,6 @@ const retryTask = (record) => {
         :page-size-options="['10', '20', '50', '100']"
     />
   </div>
-
-  <a-modal v-model:open="previewVehicleVisible"
-           title="行车大图预览"
-           :footer="null"
-           width="70%"
-           :mask-closable="false"
-           destroy-on-close>
-    <div style="overflow-x: auto">
-      <img alt="行车大图"
-           :src="previewVehicleImage"
-           style="height: 70vh; display: block; margin: auto; border: 1px solid #eee;"/>
-    </div>
-    <template #footer>
-      <a-button key="back" @click="previewVehicleVisible = false">关闭</a-button>
-    </template>
-  </a-modal>
 
 </template>
 

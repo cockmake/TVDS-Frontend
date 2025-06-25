@@ -18,7 +18,7 @@ const labelCol = {
   }
 };
 const vehicleInfo = reactive({
-  imageFile: null,
+  imageFiles: [null, null, null, null, null],
   recordStation: '',
   travelDirection: '',
   vehicleInfo: '',
@@ -28,7 +28,7 @@ const vehicleInfo = reactive({
   vehicleDesc: '',
 })
 
-const fileList = ref([])
+const fileLists = ref([[], [], [], [], []])
 
 const loading = ref(false)
 
@@ -37,10 +37,11 @@ const handleClose = () => {
 }
 const handleSubmit = () => {
   if (props.operationType === 'add') {
-    if (!vehicleInfo.imageFile) {
+    const uploadedCount = vehicleInfo.imageFiles.filter(f => f).length;
+    if (uploadedCount < 5) {
       notification['error']({
-        message: '传行车图片未上传',
-        description: '请上传行车图片',
+        message: '行车图片未上传完整',
+        description: `必须上传5张方位图片，当前已上传 ${uploadedCount} 张。`,
         placement: 'topRight',
         duration: 3,
       })
@@ -51,14 +52,18 @@ const handleSubmit = () => {
     updateVehicle()
   }
 }
-const beforeUpload = (file) => {
-  fileList.value = [...(fileList.value || []), file];
-  vehicleInfo.imageFile = file;
+// 为指定的上传组件处理文件选择
+const beforeUpload = (file, index) => {
+  vehicleInfo.imageFiles[index] = file;
+  // 手动更新对应上传组件的文件列表
+  fileLists.value[index] = [file];
+  // 阻止 antd 的默认上传行为
   return false
 }
 
-const handleRemove = (file) => {
-  vehicleInfo.imageFile = null;
+const handleRemove = (index) => {
+  vehicleInfo.imageFiles[index] = null;
+  fileLists.value[index] = [];
 }
 let vehicleId = null
 const setVehicleInfo = (data) => {
@@ -109,7 +114,12 @@ const addVehicle = () => {
   formData.append('bureau', vehicleInfo.bureau)
   formData.append('section', vehicleInfo.section)
   formData.append('vehicleDesc', vehicleInfo.vehicleDesc)
-  formData.append('imageFile', vehicleInfo.imageFile)
+  // 追加所有5张图片文件。后端应能接收一个文件数组
+  vehicleInfo.imageFiles.forEach(file => {
+    if (file) {
+      formData.append('imageFiles', file)
+    }
+  })
   HTTP.post(
       '/railway-vehicle',
       formData,
@@ -122,6 +132,7 @@ const addVehicle = () => {
     // 添加成功了
     emits('after-submit')
     resetForm()
+    emits('close-modal')
   }).finally(() => {
     loading.value = false
   })
@@ -134,8 +145,8 @@ const resetForm = () => {
   vehicleInfo.bureau = ''
   vehicleInfo.section = ''
   vehicleInfo.vehicleDesc = ''
-  vehicleInfo.imageFile = null
-  fileList.value = []
+  vehicleInfo.imageFiles = [null, null, null, null, null]
+  fileLists.value = [[], [], [], [], []]
 }
 
 
@@ -154,23 +165,23 @@ defineExpose({
     <a-form-item
         v-if="props.operationType === 'add'"
         required
-        label="行车图片"
-        name="imageFile">
+        label="行车图片">
       <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-        <div v-for="(index) in 5"  style="display: flex; flex-direction: column; justify-content: center; align-items: center;  ">
+        <div v-for="(index) in 5"
+             style="display: flex; flex-direction: column; justify-content: center; align-items: center;  ">
           <span style="white-space: nowrap; margin-bottom: 8px">方位{{ index }}：</span>
           <div>
             <a-upload
-                :before-upload="beforeUpload"
-                @remove="handleRemove"
+                :before-upload="(file) => beforeUpload(file, index - 1)"
+                @remove="handleRemove(index - 1)"
+                v-model:file-list="fileLists[index - 1]"
+                :max-count="1"
                 accept="image/png, image/jpg, image/jpeg"
-                v-model:file-list="fileList"
                 list-type="picture-card">
-              <div v-if="fileList.length < 1">
+              <div v-if="!fileLists[index - 1] || fileLists[index - 1].length < 1">
                 <plus-outlined/>
-                <div style="margin-top: 8px">上传行车图像</div>
+                <div style="margin-top: 8px">上传图片</div>
               </div>
-              <template #previewIcon></template>
             </a-upload>
           </div>
 
