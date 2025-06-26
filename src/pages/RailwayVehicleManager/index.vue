@@ -246,11 +246,11 @@ const handlePreviewClose = () => {
            @after-close="handlePreviewClose">
     <div style="text-align: center; margin-bottom: 16px;">
       <a-radio-group v-model:value="previewDirection" @change="handlePreviewDirectionChange" button-style="solid">
-        <a-radio-button :value="1">方位1</a-radio-button>
-        <a-radio-button :value="2">方位2</a-radio-button>
-        <a-radio-button :value="3">方位3</a-radio-button>
-        <a-radio-button :value="4">方位4</a-radio-button>
-        <a-radio-button :value="5">方位5</a-radio-button>
+        <a-radio-button :value="0">方位1</a-radio-button>
+        <a-radio-button :value="1">方位2</a-radio-button>
+        <a-radio-button :value="2">方位3</a-radio-button>
+        <a-radio-button :value="3">方位4</a-radio-button>
+        <a-radio-button :value="4">方位5</a-radio-button>
       </a-radio-group>
     </div>
     <div style="overflow-x: auto">

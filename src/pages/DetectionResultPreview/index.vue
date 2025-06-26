@@ -124,7 +124,6 @@ const columns = [
 // 首次获取所有零部件类型
 const totalRecords = ref(0);
 const getComponentTypes = () => {
-
   HTTP.get(`/detection-result/${taskId}/${selectedDirection.value}`)
       .then(res => {
         componentTypeList.value = res.data;
@@ -133,7 +132,6 @@ const getComponentTypes = () => {
           selectedComponentName.value = componentTypeList.value[0].componentName;
           totalRecords.value = res.data.reduce((sum, item) => sum + item.count, 0);
         }
-
       });
 };
 watch(selectedDirection, () => {
@@ -148,7 +146,6 @@ watch(selectedComponentId, id => {
 });
 // 根据选中组件获取检测结果
 const fetchResults = (componentId) => {
-  return
   HTTP.get(`/detection-result/${taskId}/${selectedDirection.value}/${componentId}`)
       .then(res => {
         detectionResults.value = res.data.records || []
