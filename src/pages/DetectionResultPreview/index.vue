@@ -240,18 +240,16 @@ const previewDetectionResult = async (item) => {
 const previewVehicleImage = ref('');
 const previewVehicleVisible = ref(false);
 const previewVehicle = async (vehicleId) => {
-  if (!previewVehicleImage.value) {
-    const res = await HTTP.get(
-        `/railway-vehicle/${vehicleId}/${selectedDirection.value}/preview`, // 使用模板字符串
-        {
-          responseType: 'blob'
-        },
-    )
-    if (previewVehicleImage.value) {
-      URL.revokeObjectURL(previewVehicleImage.value);
-    }
-    previewVehicleImage.value = URL.createObjectURL(res);
+  const res = await HTTP.get(
+      `/railway-vehicle/${vehicleId}/${selectedDirection.value}/preview`, // 使用模板字符串
+      {
+        responseType: 'blob'
+      },
+  )
+  if (previewVehicleImage.value) {
+    URL.revokeObjectURL(previewVehicleImage.value);
   }
+  previewVehicleImage.value = URL.createObjectURL(res);
   previewVehicleVisible.value = true;
 };
 const selectedDetectionResult = ref(null);
