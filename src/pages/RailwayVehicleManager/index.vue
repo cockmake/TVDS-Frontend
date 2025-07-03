@@ -3,6 +3,7 @@ import {h, nextTick, onMounted, reactive, ref} from "vue";
 import {InfoCircleOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined} from "@ant-design/icons-vue";
 import VehicleInfoForm from "./components/VehicleInfoForm.vue";
 import {HTTP} from "../../api/service.js";
+import router from "../../router.js";
 
 const columns = ref([
   {
@@ -19,7 +20,7 @@ const columns = ref([
     key: "recordStation",
     sorter: (a, b) => a.recordStation.localeCompare(b.recordStation),
     sortDirections: ['descend', 'ascend'],
-    width: 100
+    width: 160
   },
   {
     title: "行车方向",
@@ -51,7 +52,7 @@ const columns = ref([
     key: "bureau",
     sorter: (a, b) => a.bureau.localeCompare(b.bureau),
     sortDirections: ['descend', 'ascend'],
-    width: 100
+    width: 150
   },
   {
     title: "当担段",
@@ -59,13 +60,26 @@ const columns = ref([
     key: "section",
     sorter: (a, b) => a.section.localeCompare(b.section),
     sortDirections: ['descend', 'ascend'],
-    width: 100
+    width: 150
   },
   {
     title: '客车备注',
     dataIndex: 'vehicleDesc',
     key: 'vehicleDesc',
     ellipsis: true,
+    width: 100
+  },
+  {
+    title: '辆序',
+    dataIndex: 'vehicleSeq',
+    key: 'vehicleSeq',
+    width: 80
+  },
+  {
+    title: '总辆数',
+    dataIndex: 'totalSequence',
+    key: 'totalSequence',
+    width: 80
   },
   {
     title: '操作',
@@ -176,6 +190,11 @@ const handlePreviewClose = () => {
   }
   currentPreviewRecordId.value = null;
 }
+const viewResults = (record) => {
+  router.push({
+    path: '/detection-result/' + record.taskItem.taskId
+  });
+};
 </script>
 
 <template>
@@ -214,7 +233,7 @@ const handlePreviewClose = () => {
         <template v-if="column.key === 'action'">
           <div
               style="display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: center;">
-            <a-button @click="previewVehicle(record)">行车预览</a-button>
+            <a-button @click="previewVehicle(record)" style="margin-right: 5px">行车预览</a-button>
             <!--            <a-divider type="vertical" style="height: 30px"/>-->
             <!--            <a-button @click="updateVehicleClick(record)">编辑信息</a-button>-->
             <!--            <a-divider type="vertical" style="height: 30px"/>-->
@@ -224,8 +243,14 @@ const handlePreviewClose = () => {
             <!--              </template>-->
             <!--              <a-button>删除</a-button>-->
             <!--            </a-popconfirm>-->
-            <a-divider type="vertical" style="height: 30px"/>
-            <a-button @click="execDetectionTask(record)">创建任务</a-button>
+            <a-button style="margin-right: 5px" v-if="record.taskItem === null" @click="execDetectionTask(record)">开始检测</a-button>
+            <div v-else>
+              <a-button style="margin-right: 5px" @click="execDetectionTask(record)">再次检测</a-button>
+              <a-button style="margin-right: 5px" v-if="record.taskItem.taskStatus === 1" type="primary" loading>进行中</a-button>
+              <a-button style="margin-right: 5px" v-else-if="record.taskItem.taskStatus === 2" type="primary" @click="viewResults(record)">查看结果</a-button>
+              <a-button style="margin-right: 5px" v-else-if="record.taskItem.taskStatus === 3" type="primary" danger>检测失败</a-button>
+            </div>
+
           </div>
         </template>
       </template>
@@ -271,6 +296,7 @@ const handlePreviewClose = () => {
   <a-modal v-model:open="newVehicleModal"
            :mask-closable="false"
            :footer="null"
+           style="top: 10px"
            destroy-on-close title="新增行车信息">
     <VehicleInfoForm @after-submit="searchData" @close-modal="() => newVehicleModal = false" operation-type="add"/>
   </a-modal>

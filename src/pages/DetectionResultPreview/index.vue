@@ -37,6 +37,8 @@ const detectionResults = ref([]);
     "travelDirection": "1",
     "bureau": "1",
     "section": "1",
+    "vehicleSeq": 1,
+    "totalSequence": 1,
     "vehicleCreatedAt": "2025-05-14 20:10:28"
 }
 */
@@ -112,17 +114,30 @@ const columns = [
     key: "x1",
     sorter: (a, b) => a.x1 - b.x1,
     sortDirections: ['descend', 'ascend'],
-    width: '120px',
+    width: '150px',
+  },
+  {
+    title: "辆序",
+    dataIndex: "vehicleSeq",
+    key: "vehicleSeq",
+    width: 120
+  },
+  {
+    title: "总辆数",
+    dataIndex: "totalSequence",
+    key: "totalSequence",
+    width: 120
   },
   {
     title: "操作",
     key: 'action',
     fixed: 'right',
-    width: 200,
+    width: 250,
   }
 ];
 // 首次获取所有零部件类型
 const totalRecords = ref(0);
+const totalAbnormalRecords = ref(0); // 新增：故障记录总数
 const getComponentTypes = () => {
   HTTP.get(`/detection-result/${taskId}/${selectedDirection.value}`)
       .then(res => {
@@ -130,7 +145,12 @@ const getComponentTypes = () => {
         if (componentTypeList.value.length) {
           selectedComponentId.value = componentTypeList.value[0].componentId;
           selectedComponentName.value = componentTypeList.value[0].componentName;
-          totalRecords.value = res.data.reduce((sum, item) => sum + item.count, 0);
+        } else {
+          selectedComponentId.value = '';
+          selectedComponentName.value = '';
+          totalRecords.value = 0;
+          totalAbnormalRecords.value = 0;
+          detectionResults.value = [];
         }
       });
 };
@@ -149,6 +169,8 @@ const fetchResults = (componentId) => {
   HTTP.get(`/detection-result/${taskId}/${selectedDirection.value}/${componentId}`)
       .then(res => {
         detectionResults.value = res.data.records || []
+        totalRecords.value = detectionResults.value.length
+        totalAbnormalRecords.value = detectionResults.value.filter(item => item.isAbnormal).length;
       });
 };
 // 新增 ref
@@ -295,7 +317,8 @@ const displayResultDetail = (record) => {
         <template #title>
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span>检测结果查询</span>
-            <span>该车辆共 {{ totalRecords }} 条检测结果</span>
+            <span>该方位共 <a-tag>{{ totalRecords }}</a-tag> 条检测结果，
+              其中故障信息有<a-tag color="red">{{ totalAbnormalRecords }}</a-tag>条</span>
           </div>
         </template>
         <template #bodyCell="{ column, record }">
@@ -303,6 +326,11 @@ const displayResultDetail = (record) => {
             <a-space style="width: 100%; justify-content: center;">
               <a-button @click="displayResultDetail(record)">
                 查看详情
+              </a-button>
+              <a-button v-if="record.isAbnormal"
+                        danger
+                        type="primary">
+                上报故障
               </a-button>
             </a-space>
           </template>
@@ -361,6 +389,12 @@ const displayResultDetail = (record) => {
         <a-tag :color="selectedDetectionResult.isAbnormal ? 'red' : 'green'">
           {{ selectedDetectionResult.isAbnormal ? '有故障' : '无故障' }}
         </a-tag>
+      </a-descriptions-item>
+      <a-descriptions-item label="辆序">
+        {{ selectedDetectionResult.vehicleSeq }}
+      </a-descriptions-item>
+      <a-descriptions-item label="总辆数">
+        {{ selectedDetectionResult.totalSequence }}
       </a-descriptions-item>
       <a-descriptions-item label="车辆备注">
         {{ selectedDetectionResult.vehicleDesc || '无' }}

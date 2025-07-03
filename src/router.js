@@ -11,7 +11,7 @@ export const routes = [
     {
         path: '/', // Main layout route
         component: MainLayout,
-        redirect: '/component-manage', // Default redirect after login or direct access
+        redirect: '/railway-vehicle-manage', // Default redirect after login or direct access
         children: [
             {
                 path: '/component-manage',

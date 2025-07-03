@@ -130,7 +130,6 @@ const deleteTask = (record) => {
 
 // 查看结果 (占位符)
 const viewResults = (record) => {
-  sessionStorage.setItem('taskInfo', JSON.stringify(record));
   router.push({
     path: '/detection-result/' + record.id
   });

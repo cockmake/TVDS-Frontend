@@ -25,6 +25,8 @@ const vehicleInfo = reactive({
   vehicleIdentity: '',
   bureau: '',
   section: '',
+  vehicleSeq: 1,
+  totalSequence: 1,
   vehicleDesc: '',
 })
 
@@ -113,6 +115,8 @@ const addVehicle = () => {
   formData.append('vehicleIdentity', vehicleInfo.vehicleIdentity)
   formData.append('bureau', vehicleInfo.bureau)
   formData.append('section', vehicleInfo.section)
+  formData.append('vehicleSeq', vehicleInfo.vehicleSeq)
+  formData.append('totalSequence', vehicleInfo.totalSequence)
   formData.append('vehicleDesc', vehicleInfo.vehicleDesc)
   // 追加所有5张图片文件。后端应能接收一个文件数组
   vehicleInfo.imageFiles.forEach(file => {
@@ -125,7 +129,7 @@ const addVehicle = () => {
       formData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          // 'Content-Type': 'multipart/form-data'
         }
       },
   ).then((res) => {
@@ -217,6 +221,17 @@ defineExpose({
         label="段信息"
         name="section">
       <a-input v-model:value="vehicleInfo.section" placeholder="请输入车次信息"/>
+    </a-form-item>
+    <a-form-item
+        label="辆序"
+        name="vehicleSeq">
+      <a-input-number style="width: 100%" v-model:value="vehicleInfo.vehicleSeq" :min="1" placeholder="请输入行车序号"/>
+    </a-form-item>
+    <a-form-item
+
+        label="总辆数"
+        name="totalSequence">
+      <a-input-number style="width: 100%" v-model:value="vehicleInfo.totalSequence" :min="1" placeholder="请输入总序号"/>
     </a-form-item>
     <a-form-item
         label="行车备注"
