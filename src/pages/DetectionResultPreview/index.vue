@@ -2,6 +2,7 @@
 import {useRoute} from "vue-router";
 import {computed, onMounted, ref, watch, reactive, nextTick, onBeforeUnmount} from "vue";
 import {HTTP} from "../../api/service.js";
+import {DIRECTION_NAME} from "../../consts.js";
 
 const route = useRoute();
 const taskId = route.params.taskId;
@@ -291,11 +292,11 @@ const displayResultDetail = (record) => {
     <div style="margin-bottom: 16px;">
       <span style="margin-right: 8px;">车辆方位:</span>
       <a-radio-group v-model:value="selectedDirection" button-style="solid">
-        <a-radio-button :value="0">方位1</a-radio-button>
-        <a-radio-button :value="1">方位2</a-radio-button>
-        <a-radio-button :value="2">方位3</a-radio-button>
-        <a-radio-button :value="3">方位4</a-radio-button>
-        <a-radio-button :value="4">方位5</a-radio-button>
+        <a-radio-button :value="0">右侧</a-radio-button>
+        <a-radio-button :value="1">左侧</a-radio-button>
+        <a-radio-button :value="2">底中</a-radio-button>
+        <a-radio-button :value="3">底右</a-radio-button>
+        <a-radio-button :value="4">底左</a-radio-button>
       </a-radio-group>
     </div>
     <div style="margin-bottom: 16px;">
@@ -403,7 +404,7 @@ const displayResultDetail = (record) => {
         {{ selectedDetectionResult.componentName }}
       </a-descriptions-item>
       <a-descriptions-item label="拍摄方位">
-        方位{{ selectedDetectionResult.direction + 1 }}
+        {{ DIRECTION_NAME[selectedDetectionResult.direction] }}
       </a-descriptions-item>
       <a-descriptions-item label="结果图像">
         <div style="height: 400px; text-align: center;">

@@ -4,6 +4,7 @@ import {InfoCircleOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined
 import VehicleInfoForm from "./components/VehicleInfoForm.vue";
 import {HTTP} from "../../api/service.js";
 import router from "../../router.js";
+import {DIRECTION_NAME} from "../../consts.js";
 
 const columns = ref([
   {
@@ -271,11 +272,11 @@ const viewResults = (record) => {
            @after-close="handlePreviewClose">
     <div style="text-align: center; margin-bottom: 16px;">
       <a-radio-group v-model:value="previewDirection" @change="handlePreviewDirectionChange" button-style="solid">
-        <a-radio-button :value="0">方位1</a-radio-button>
-        <a-radio-button :value="1">方位2</a-radio-button>
-        <a-radio-button :value="2">方位3</a-radio-button>
-        <a-radio-button :value="3">方位4</a-radio-button>
-        <a-radio-button :value="4">方位5</a-radio-button>
+        <a-radio-button :value="0">{{DIRECTION_NAME[0]}}</a-radio-button>
+        <a-radio-button :value="1">{{DIRECTION_NAME[1]}}</a-radio-button>
+        <a-radio-button :value="2">{{DIRECTION_NAME[2]}}</a-radio-button>
+        <a-radio-button :value="3">{{DIRECTION_NAME[3]}}</a-radio-button>
+        <a-radio-button :value="4">{{DIRECTION_NAME[4]}}</a-radio-button>
       </a-radio-group>
     </div>
     <div style="overflow-x: auto">

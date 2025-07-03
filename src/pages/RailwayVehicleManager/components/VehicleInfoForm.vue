@@ -3,6 +3,7 @@ import {ref, reactive, h} from 'vue'
 import {HTTP} from "../../../api/service.js";
 import {InfoCircleOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined} from '@ant-design/icons-vue';
 import {message, notification} from "ant-design-vue";
+import {DIRECTION_NAME} from "../../../consts.js";
 
 const emits = defineEmits(['before-submit', 'after-submit', 'close-modal'])
 const props = defineProps({
@@ -173,7 +174,7 @@ defineExpose({
       <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
         <div v-for="(index) in 5"
              style="display: flex; flex-direction: column; justify-content: center; align-items: center;  ">
-          <span style="white-space: nowrap; margin-bottom: 8px">方位{{ index }}：</span>
+          <span style="white-space: nowrap; margin-bottom: 8px">{{ DIRECTION_NAME[index - 1] }}：</span>
           <div>
             <a-upload
                 :before-upload="(file) => beforeUpload(file, index - 1)"
@@ -231,7 +232,8 @@ defineExpose({
 
         label="总辆数"
         name="totalSequence">
-      <a-input-number style="width: 100%" v-model:value="vehicleInfo.totalSequence" :min="1" placeholder="请输入总序号"/>
+      <a-input-number style="width: 100%" v-model:value="vehicleInfo.totalSequence" :min="1"
+                      placeholder="请输入总序号"/>
     </a-form-item>
     <a-form-item
         label="行车备注"
