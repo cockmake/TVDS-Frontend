@@ -221,7 +221,13 @@ const viewResults = (record) => {
     path: '/detection-result/' + record.taskItem.taskId
   });
 };
-
+const getRowClassName = (record, index) => {
+  console.log(record)
+  if (record.taskItem && record.taskItem.hasAbnormal) {
+    return 'error-row'; // 有异常的行
+  }
+  return 'normal-row'; // 正常的行
+}
 </script>
 
 <template>
@@ -229,6 +235,7 @@ const viewResults = (record) => {
     <a-table :data-source="dataSource"
              :columns="columns"
              bordered
+             :row-class-name="getRowClassName"
              row-key="id"
              :scroll="{ y: 'calc(100vh - 300px)' }"
              :expand-column-width="85"
@@ -348,6 +355,8 @@ const viewResults = (record) => {
   </a-modal>
 </template>
 
-<style scoped>
-
+<style>
+.error-row {
+  color: red;
+}
 </style>
