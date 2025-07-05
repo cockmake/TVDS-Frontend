@@ -74,7 +74,8 @@ const columns = ref([
     title: '辆序',
     dataIndex: 'vehicleSeq',
     key: 'vehicleSeq',
-    width: 80
+    width: 80,
+    sorter: (a, b) => a.vehicleSeq - b.vehicleSeq,
   },
   {
     title: '总辆数',
@@ -90,17 +91,37 @@ const columns = ref([
   },
 ])
 onMounted(() => {
+  getVehicleInfoOptions()
   searchData()
 })
 const totalData = ref(300)
 const dataSource = ref([])
+const vehicleInfoOptions = ref([])
 const searchKey = reactive({
-  vehicleInfo: '',
-  vehicleDesc: '',
+  dateRange: null,
+  vehicleInfoList: [],
   currentPage: 1,
   pageSize: 10,
 })
-
+const getVehicleInfoOptions = () => {
+  HTTP.post('/railway-vehicle/vehicle-info-options', {
+    startDate: searchKey.dateRange ? searchKey.dateRange[0].format('YYYY-MM-DD') + ' 23:59:59' : null,
+    endDate: searchKey.dateRange ? searchKey.dateRange[1].format('YYYY-MM-DD') + ' 23:59:59' : null,
+  }).then((res) => {
+    vehicleInfoOptions.value = res.data.map(item => ({
+      label: item,
+      value: item
+    }))
+  })
+}
+const vehicleInfoListChange = (value) => {
+  searchData()
+}
+const searchDateChange = (value) => {
+  vehicleInfoOptions.value = []
+  getVehicleInfoOptions()
+  searchData()
+}
 const onPageChange = (currentPage, pageNumber) => {
   // 发起请求
   searchKey.currentPage = currentPage;
@@ -114,7 +135,11 @@ const searchData = () => {
   HTTP.post(
       '/railway-vehicle/page',
       {
-        ...searchKey
+        startDate: searchKey.dateRange ? searchKey.dateRange[0].format('YYYY-MM-DD') + ' 23:59:59' : null,
+        endDate: searchKey.dateRange ? searchKey.dateRange[1].format('YYYY-MM-DD') + ' 23:59:59' : null,
+        vehicleInfoList: searchKey.vehicleInfoList,
+        currentPage: searchKey.currentPage,
+        pageSize: searchKey.pageSize,
       },
       {
         headers: {
@@ -196,6 +221,7 @@ const viewResults = (record) => {
     path: '/detection-result/' + record.taskItem.taskId
   });
 };
+
 </script>
 
 <template>
@@ -212,20 +238,30 @@ const viewResults = (record) => {
           <span style="font-size: 20px; font-weight: bold">TVDS行车入站信息</span>
           <div style="display: flex; flex-wrap: nowrap; align-items: center">
             <a-button :icon="h(PlusOutlined)" @click="newVehicleModal = true">客车入站</a-button>
-            <a-input v-model:value="searchKey.vehicleInfo" placeholder="行车信息" allow-clear>
-              <template #suffix>
-                <a-tooltip title="行车信息精准搜索">
-                  <info-circle-outlined style="color: rgba(0, 0, 0, 0.45)"/>
-                </a-tooltip>
-              </template>
-            </a-input>
-            <a-input v-model:value="searchKey.vehicleDesc" placeholder="行车备注" allow-clear>
-              <template #suffix>
-                <a-tooltip title="行车备注模糊搜索">
-                  <info-circle-outlined style="color: rgba(0, 0, 0, 0.45)"/>
-                </a-tooltip>
-              </template>
-            </a-input>
+            <a-range-picker v-model:value="searchKey.dateRange" @change="searchDateChange"/>
+            <a-select
+                v-model:value="searchKey.vehicleInfoList"
+                :options="vehicleInfoOptions"
+                @change="vehicleInfoListChange"
+                mode="tags"
+                size="middle"
+                placeholder="选择车次信息"
+                style="width: 200px"
+            ></a-select>
+            <!--            <a-input v-model:value="searchKey.vehicleInfo" placeholder="行车信息" allow-clear>-->
+            <!--              <template #suffix>-->
+            <!--                <a-tooltip title="行车信息精准搜索">-->
+            <!--                  <info-circle-outlined style="color: rgba(0, 0, 0, 0.45)"/>-->
+            <!--                </a-tooltip>-->
+            <!--              </template>-->
+            <!--            </a-input>-->
+            <!--            <a-input v-model:value="searchKey.vehicleDesc" placeholder="行车备注" allow-clear>-->
+            <!--              <template #suffix>-->
+            <!--                <a-tooltip title="行车备注模糊搜索">-->
+            <!--                  <info-circle-outlined style="color: rgba(0, 0, 0, 0.45)"/>-->
+            <!--                </a-tooltip>-->
+            <!--              </template>-->
+            <!--            </a-input>-->
             <a-button type="primary" :icon="h(SearchOutlined)" @click="searchData">搜索</a-button>
           </div>
         </div>
@@ -244,12 +280,20 @@ const viewResults = (record) => {
             <!--              </template>-->
             <!--              <a-button>删除</a-button>-->
             <!--            </a-popconfirm>-->
-            <a-button style="margin-right: 5px" v-if="record.taskItem === null" @click="execDetectionTask(record)">开始检测</a-button>
+            <a-button style="margin-right: 5px" v-if="record.taskItem === null" @click="execDetectionTask(record)">
+              开始检测
+            </a-button>
             <div v-else>
               <a-button style="margin-right: 5px" @click="execDetectionTask(record)">再次检测</a-button>
-              <a-button style="margin-right: 5px" v-if="record.taskItem.taskStatus === 1" type="primary" loading>进行中</a-button>
-              <a-button style="margin-right: 5px" v-else-if="record.taskItem.taskStatus === 2" type="primary" @click="viewResults(record)">查看结果</a-button>
-              <a-button style="margin-right: 5px" v-else-if="record.taskItem.taskStatus === 3" type="primary" danger>检测失败</a-button>
+              <a-button style="margin-right: 5px" v-if="record.taskItem.taskStatus === 1" type="primary" loading>
+                进行中
+              </a-button>
+              <a-button style="margin-right: 5px" v-else-if="record.taskItem.taskStatus === 2" type="primary"
+                        @click="viewResults(record)">查看结果
+              </a-button>
+              <a-button style="margin-right: 5px" v-else-if="record.taskItem.taskStatus === 3" type="primary" danger>
+                检测失败
+              </a-button>
             </div>
 
           </div>
@@ -259,7 +303,7 @@ const viewResults = (record) => {
   </div>
   <!--  分页-->
   <div style="text-align: center; width: 100%; margin-top: 15px">
-    <a-pagination show-quick-jumper :total="totalData" @change="onPageChange"/>
+    <a-pagination show-quick-jumper show-size-changer :total="totalData" @change="onPageChange"/>
   </div>
   <!--  行车大图预览-->
   <!--  行车大图预览-->
@@ -272,11 +316,11 @@ const viewResults = (record) => {
            @after-close="handlePreviewClose">
     <div style="text-align: center; margin-bottom: 16px;">
       <a-radio-group v-model:value="previewDirection" @change="handlePreviewDirectionChange" button-style="solid">
-        <a-radio-button :value="0">{{DIRECTION_NAME[0]}}</a-radio-button>
-        <a-radio-button :value="1">{{DIRECTION_NAME[1]}}</a-radio-button>
-        <a-radio-button :value="2">{{DIRECTION_NAME[2]}}</a-radio-button>
-        <a-radio-button :value="3">{{DIRECTION_NAME[3]}}</a-radio-button>
-        <a-radio-button :value="4">{{DIRECTION_NAME[4]}}</a-radio-button>
+        <a-radio-button :value="0">{{ DIRECTION_NAME[0] }}</a-radio-button>
+        <a-radio-button :value="1">{{ DIRECTION_NAME[1] }}</a-radio-button>
+        <a-radio-button :value="2">{{ DIRECTION_NAME[2] }}</a-radio-button>
+        <a-radio-button :value="3">{{ DIRECTION_NAME[3] }}</a-radio-button>
+        <a-radio-button :value="4">{{ DIRECTION_NAME[4] }}</a-radio-button>
       </a-radio-group>
     </div>
     <div style="overflow-x: auto">
