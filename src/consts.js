@@ -1,5 +1,5 @@
-const SERVER_HOST = "http://127.0.0.1:8080";
-// const SERVER_HOST = "http://192.168.188.1:8080";
+// const SERVER_HOST = "http://127.0.0.1:8080";
+const SERVER_HOST = "http://192.168.188.1:8080";
 // const SERVER_HOST = "http://192.168.188.8:8082";
 // const SERVER_HOST = "http://10.0.100.211:8082";
 const SERVER_API_VERSION = "/api/v1";

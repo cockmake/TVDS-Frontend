@@ -15,7 +15,7 @@ const onFinish = values => {
   if (values.username === 'admin' && values.password === 'password') {
     localStorage.setItem('userLoggedIn', 'true');
     message.success('登录成功!');
-    router.push('/component-manage');
+    router.push('/railway-vehicle-manage');
   } else {
     message.error('用户名或密码错误!');
   }

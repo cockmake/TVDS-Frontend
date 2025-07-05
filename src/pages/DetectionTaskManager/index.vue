@@ -8,15 +8,14 @@ import router from "../../router.js"; // 引入 message 用于提示
 // 表格列定义
 const columns = ref([
   {
+    title: "任务ID",
+    dataIndex: 'id',
+    key: 'id',
+  },
+  {
     title: '行车信息',
     dataIndex: 'vehicleInfo',
     key: 'vehicleInfo',
-  },
-  {
-    title: '客车备注',
-    dataIndex: 'vehicleDesc',
-    key: 'vehicleDesc',
-    ellipsis: true,
   },
   {
     title: '创建时间',

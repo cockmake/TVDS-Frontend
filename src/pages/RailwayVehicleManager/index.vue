@@ -63,13 +63,13 @@ const columns = ref([
     sortDirections: ['descend', 'ascend'],
     width: 150
   },
-  {
-    title: '客车备注',
-    dataIndex: 'vehicleDesc',
-    key: 'vehicleDesc',
-    ellipsis: true,
-    width: 100
-  },
+  // {
+  //   title: '客车备注',
+  //   dataIndex: 'vehicleDesc',
+  //   key: 'vehicleDesc',
+  //   ellipsis: true,
+  //   width: 100
+  // },
   {
     title: '辆序',
     dataIndex: 'vehicleSeq',
@@ -101,11 +101,11 @@ const searchKey = reactive({
   dateRange: null,
   vehicleInfoList: [],
   currentPage: 1,
-  pageSize: 10,
+  pageSize: 20,
 })
 const getVehicleInfoOptions = () => {
   HTTP.post('/railway-vehicle/vehicle-info-options', {
-    startDate: searchKey.dateRange ? searchKey.dateRange[0].format('YYYY-MM-DD') + ' 23:59:59' : null,
+    startDate: searchKey.dateRange ? searchKey.dateRange[0].format('YYYY-MM-DD') + ' 00:00:00' : null,
     endDate: searchKey.dateRange ? searchKey.dateRange[1].format('YYYY-MM-DD') + ' 23:59:59' : null,
   }).then((res) => {
     vehicleInfoOptions.value = res.data.map(item => ({
@@ -135,7 +135,7 @@ const searchData = () => {
   HTTP.post(
       '/railway-vehicle/page',
       {
-        startDate: searchKey.dateRange ? searchKey.dateRange[0].format('YYYY-MM-DD') + ' 23:59:59' : null,
+        startDate: searchKey.dateRange ? searchKey.dateRange[0].format('YYYY-MM-DD') + ' 00:00:00' : null,
         endDate: searchKey.dateRange ? searchKey.dateRange[1].format('YYYY-MM-DD') + ' 23:59:59' : null,
         vehicleInfoList: searchKey.vehicleInfoList,
         currentPage: searchKey.currentPage,
@@ -303,7 +303,8 @@ const viewResults = (record) => {
   </div>
   <!--  分页-->
   <div style="text-align: center; width: 100%; margin-top: 15px">
-    <a-pagination show-quick-jumper show-size-changer :total="totalData" @change="onPageChange"/>
+    <a-pagination show-quick-jumper show-size-changer :show-total="total => `查询到 ${totalData} 条数据`"
+                  :total="totalData" @change="onPageChange" v-model:pageSize="searchKey.pageSize"/>
   </div>
   <!--  行车大图预览-->
   <!--  行车大图预览-->
