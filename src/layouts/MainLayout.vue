@@ -13,7 +13,7 @@ import {message} from 'ant-design-vue';
 const router = useRouter();
 const route = useRoute(); // Use useRoute to get current route info
 
-const collapsed = ref(true);
+const collapsed = ref(false);
 
 // Determine selected keys based on the current route's path
 const selectedKeys = ref([route.path]);

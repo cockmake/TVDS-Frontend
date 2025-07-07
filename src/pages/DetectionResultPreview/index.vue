@@ -110,6 +110,12 @@ const columns = [
     width: '120px',
   },
   {
+    title: "故障描述",
+    dataIndex: "abnormalityDesc",
+    key: "abnormalityDesc",
+    width: '180px'
+  },
+  {
     title: "部件起始位置",
     dataIndex: "x1",
     key: "x1",
@@ -353,6 +359,7 @@ const displayResultDetail = (record) => {
            :footer="null"
            :z-index="1000"
            destroy-on-close
+           style="top: 5vh"
            width="80%">
     <a-descriptions title="检测结果详情" bordered>
       <a-descriptions-item label="车辆入站时间">
@@ -405,6 +412,9 @@ const displayResultDetail = (record) => {
       </a-descriptions-item>
       <a-descriptions-item label="拍摄方位">
         {{ DIRECTION_NAME[selectedDetectionResult.direction] }}
+      </a-descriptions-item>
+      <a-descriptions-item label="异常描述">
+        {{ selectedDetectionResult.abnormalityDesc || '无' }}
       </a-descriptions-item>
       <a-descriptions-item label="结果图像">
         <div style="height: 400px; text-align: center;">

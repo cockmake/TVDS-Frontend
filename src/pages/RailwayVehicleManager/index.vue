@@ -1,10 +1,10 @@
 <script setup>
-import {h, nextTick, onMounted, reactive, ref} from "vue";
+import {computed, h, nextTick, onMounted, reactive, ref} from "vue";
 import {InfoCircleOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined} from "@ant-design/icons-vue";
 import VehicleInfoForm from "./components/VehicleInfoForm.vue";
 import {HTTP} from "../../api/service.js";
 import router from "../../router.js";
-import {DIRECTION_NAME} from "../../consts.js";
+import {DIRECTION_NAME, VehicleSearchKey} from "../../consts.js";
 
 const columns = ref([
   {
@@ -88,6 +88,37 @@ const columns = ref([
     key: 'action',
     fixed: 'right',
     width: 400,
+    filters: [
+      {
+        text: "任务状态",
+        value: 'taskStatus',
+        children: [
+          {
+            text: '未开始',
+            value: 0,
+          },
+          {
+            text: '进行中',
+            value: 1,
+          },
+          {
+            text: '已完成',
+            value: 2,
+          },
+          {
+            text: '失败',
+            value: 3,
+          },
+        ],
+      }
+    ],
+    onFilter: (value, record) => {
+      if (!record.taskItem) {
+        return value === 0; // 如果没有TaskItem，只有未开始的状态
+      }
+      // 如果有TaskItem，根据状态进行过滤
+      return record.taskItem.taskStatus === value;
+    }
   },
 ])
 onMounted(() => {
@@ -97,16 +128,24 @@ onMounted(() => {
 const totalData = ref(300)
 const dataSource = ref([])
 const vehicleInfoOptions = ref([])
-const searchKey = reactive({
-  dateRange: null,
-  vehicleInfoList: [],
-  currentPage: 1,
-  pageSize: 20,
-})
+const abnormalFilter = ref('是否异常'); // 'all', 'normal', 'abnormal'
+const workStatusFilter = ref("全部作业")
+const filteredDataSource = computed(() => {
+  if (abnormalFilter.value === '是否异常') {
+    return dataSource.value;
+  }
+  if (abnormalFilter.value === '有异常') {
+    return dataSource.value.filter(record => record.taskItem && record.taskItem.hasAbnormal);
+  }
+  if (abnormalFilter.value === '无异常') {
+    return dataSource.value.filter(record => !record.taskItem || !record.taskItem.hasAbnormal);
+  }
+  return dataSource.value;
+});
 const getVehicleInfoOptions = () => {
   HTTP.post('/railway-vehicle/vehicle-info-options', {
-    startDate: searchKey.dateRange ? searchKey.dateRange[0].format('YYYY-MM-DD') + ' 00:00:00' : null,
-    endDate: searchKey.dateRange ? searchKey.dateRange[1].format('YYYY-MM-DD') + ' 23:59:59' : null,
+    startDate: VehicleSearchKey.dateRange ? VehicleSearchKey.dateRange[0].format('YYYY-MM-DD') + ' 00:00:00' : null,
+    endDate: VehicleSearchKey.dateRange ? VehicleSearchKey.dateRange[1].format('YYYY-MM-DD') + ' 23:59:59' : null,
   }).then((res) => {
     vehicleInfoOptions.value = res.data.map(item => ({
       label: item,
@@ -124,8 +163,8 @@ const searchDateChange = (value) => {
 }
 const onPageChange = (currentPage, pageNumber) => {
   // 发起请求
-  searchKey.currentPage = currentPage;
-  searchKey.pageSize = pageNumber;
+  VehicleSearchKey.currentPage = currentPage;
+  VehicleSearchKey.pageSize = pageNumber;
   searchData()
 }
 
@@ -135,11 +174,11 @@ const searchData = () => {
   HTTP.post(
       '/railway-vehicle/page',
       {
-        startDate: searchKey.dateRange ? searchKey.dateRange[0].format('YYYY-MM-DD') + ' 00:00:00' : null,
-        endDate: searchKey.dateRange ? searchKey.dateRange[1].format('YYYY-MM-DD') + ' 23:59:59' : null,
-        vehicleInfoList: searchKey.vehicleInfoList,
-        currentPage: searchKey.currentPage,
-        pageSize: searchKey.pageSize,
+        startDate: VehicleSearchKey.dateRange ? VehicleSearchKey.dateRange[0].format('YYYY-MM-DD') + ' 00:00:00' : null,
+        endDate: VehicleSearchKey.dateRange ? VehicleSearchKey.dateRange[1].format('YYYY-MM-DD') + ' 23:59:59' : null,
+        vehicleInfoList: VehicleSearchKey.vehicleInfoList,
+        currentPage: VehicleSearchKey.currentPage,
+        pageSize: VehicleSearchKey.pageSize,
       },
       {
         headers: {
@@ -222,7 +261,6 @@ const viewResults = (record) => {
   });
 };
 const getRowClassName = (record, index) => {
-  console.log(record)
   if (record.taskItem && record.taskItem.hasAbnormal) {
     return 'error-row'; // 有异常的行
   }
@@ -232,7 +270,7 @@ const getRowClassName = (record, index) => {
 
 <template>
   <div style="width: 100%">
-    <a-table :data-source="dataSource"
+    <a-table :data-source="filteredDataSource"
              :columns="columns"
              bordered
              :row-class-name="getRowClassName"
@@ -245,31 +283,45 @@ const getRowClassName = (record, index) => {
           <span style="font-size: 20px; font-weight: bold">TVDS行车入站信息</span>
           <div style="display: flex; flex-wrap: nowrap; align-items: center">
             <a-button :icon="h(PlusOutlined)" @click="newVehicleModal = true">客车入站</a-button>
-            <a-range-picker v-model:value="searchKey.dateRange" @change="searchDateChange"/>
+            <a-range-picker style="margin-left: 8px" v-model:value="VehicleSearchKey.dateRange" @change="searchDateChange"/>
             <a-select
-                v-model:value="searchKey.vehicleInfoList"
+                v-model:value="VehicleSearchKey.vehicleInfoList"
                 :options="vehicleInfoOptions"
                 @change="vehicleInfoListChange"
                 mode="tags"
                 size="middle"
                 placeholder="选择车次信息"
-                style="width: 200px"
+                style="width: 200px; margin-left: 8px"
             ></a-select>
-            <!--            <a-input v-model:value="searchKey.vehicleInfo" placeholder="行车信息" allow-clear>-->
+            <a-select
+                v-model:value="workStatusFilter"
+                style="width: 120px; margin-left: 8px;">
+              <a-select-option value="全部作业">全部作业</a-select-option>
+              <a-select-option value="未完成">未完成</a-select-option>
+              <a-select-option value="已完成">已完成</a-select-option>
+            </a-select>
+            <a-select
+                v-model:value="abnormalFilter"
+                style="width: 120px; margin-left: 8px;">
+              <a-select-option value="是否异常">是否异常</a-select-option>
+              <a-select-option value="有异常">有异常</a-select-option>
+              <a-select-option value="无异常">无异常</a-select-option>
+            </a-select>
+            <!--            <a-input v-model:value="VehicleSearchKey.vehicleInfo" placeholder="行车信息" allow-clear>-->
             <!--              <template #suffix>-->
             <!--                <a-tooltip title="行车信息精准搜索">-->
             <!--                  <info-circle-outlined style="color: rgba(0, 0, 0, 0.45)"/>-->
             <!--                </a-tooltip>-->
             <!--              </template>-->
             <!--            </a-input>-->
-            <!--            <a-input v-model:value="searchKey.vehicleDesc" placeholder="行车备注" allow-clear>-->
+            <!--            <a-input v-model:value="VehicleSearchKey.vehicleDesc" placeholder="行车备注" allow-clear>-->
             <!--              <template #suffix>-->
             <!--                <a-tooltip title="行车备注模糊搜索">-->
             <!--                  <info-circle-outlined style="color: rgba(0, 0, 0, 0.45)"/>-->
             <!--                </a-tooltip>-->
             <!--              </template>-->
             <!--            </a-input>-->
-            <a-button type="primary" :icon="h(SearchOutlined)" @click="searchData">搜索</a-button>
+            <a-button style="margin-left: 8px" type="primary" :icon="h(SearchOutlined)" @click="searchData">搜索</a-button>
           </div>
         </div>
       </template>
@@ -311,7 +363,7 @@ const getRowClassName = (record, index) => {
   <!--  分页-->
   <div style="text-align: center; width: 100%; margin-top: 15px">
     <a-pagination show-quick-jumper show-size-changer :show-total="total => `查询到 ${totalData} 条数据`"
-                  :total="totalData" @change="onPageChange" v-model:pageSize="searchKey.pageSize"/>
+                  :total="totalData" @change="onPageChange" v-model:pageSize="VehicleSearchKey.pageSize"/>
   </div>
   <!--  行车大图预览-->
   <!--  行车大图预览-->
