@@ -47,7 +47,7 @@ const fileList = ref([]);
 const handleCancel = () => {
   previewVisible.value = false;
 };
-
+const labelModalVisible = ref(false);
 const handlePreview = async file => {
   if (!file.url && !file.preview) {
     file.preview = await getBase64(file.originFileObj);
@@ -56,9 +56,18 @@ const handlePreview = async file => {
   // previewVisible.value = true;
   labelImgSrc.value = file.url;
   currentTemplateImageId.value = file.uid
+  labelModalVisible.value = true;
 };
 const handleRemove = (fileStatus) => {
+
+
   if (fileStatus.status === 'done') {
+    // 弹出对话框确认删除
+    // 这里可以使用 Ant Design Vue 的 confirm 对话框
+    let confirm = window.confirm('确定要删除这个部件模板吗？');
+    if (!confirm) {
+      return false;
+    }
     HTTP.delete(
         '/component-template-image/' + componentId + '/' + fileStatus.uid,
         {
@@ -118,13 +127,21 @@ const visualPromptPreview = () => {
     <div style="width: 100%; display: flex; justify-content: flex-end; align-items: center;">
       <a-button @click="visualPromptPreview" type="dashed">预览当前视觉模板</a-button>
     </div>
+    <a-modal
+        style="min-width: 1500px"
+        v-model:open="labelModalVisible"
+        title="零部件标注"
+        destroy-on-close
+        :footer="null">
+      <ComponentTemplateImageLabel
+          style="margin-top: 10px; width: 100%"
+          :key="previewImage"
+          v-if="currentTemplateImageId !== ''"
+          :img-src="previewImage"
+          :template-image-id="currentTemplateImageId"/>
+    </a-modal>
 
-    <ComponentTemplateImageLabel
-        style="margin-top: 10px"
-        :key="previewImage"
-        v-if="currentTemplateImageId !== ''"
-        :img-src="previewImage"
-        :template-image-id="currentTemplateImageId"/>
+
     <!--    预览单张图片-->
     <a-modal
         :open="previewVisible"

@@ -15,6 +15,6 @@ const VehicleSearchKey = reactive({
     dateRange: null,
     vehicleInfoList: [],
     currentPage: 1,
-    pageSize: 20,
+    pageSize: 50,
 })
 export {SERVER_HOST, SERVER_API_VERSION, SERVER_API_URL, DIRECTION_NAME, VehicleSearchKey};

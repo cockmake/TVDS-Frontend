@@ -169,6 +169,9 @@ watch(selectedDirection, () => {
 });
 // 监听分段选择变化
 watch(selectedComponentId, id => {
+  // 修改选中的零部件名称
+  const selectedComponent = componentTypeList.value.find(item => item.componentId === id);
+  selectedComponentName.value = selectedComponent ? selectedComponent.componentName : '';
   if (id) fetchResults(id);
 });
 // 根据选中组件获取检测结果
@@ -359,9 +362,10 @@ const displayResultDetail = (record) => {
            :footer="null"
            :z-index="1000"
            destroy-on-close
-           style="top: 5vh"
-           width="80%">
-    <a-descriptions title="检测结果详情" bordered>
+           style="top: 5vh; width: 80%">
+    <a-descriptions
+        :column="{ xxl: 4, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }"
+        title="检测结果详情" bordered style="height: 100%; overflow-y: auto;">
       <a-descriptions-item label="车辆入站时间">
         {{ selectedDetectionResult.vehicleCreatedAt }}
       </a-descriptions-item>
@@ -408,7 +412,7 @@ const displayResultDetail = (record) => {
         {{ selectedDetectionResult.vehicleDesc || '无' }}
       </a-descriptions-item>
       <a-descriptions-item label="部件名称">
-        {{ selectedDetectionResult.componentName }}
+        {{ selectedComponentName }}
       </a-descriptions-item>
       <a-descriptions-item label="拍摄方位">
         {{ DIRECTION_NAME[selectedDetectionResult.direction] }}

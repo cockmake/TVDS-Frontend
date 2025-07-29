@@ -28,12 +28,12 @@ const columns = ref([
     sorter: (a, b) => a.totalCount.localeCompare(b.totalCount),
     sortDirections: ['descend', 'ascend'],
   },
-  {
-    title: '部件备注',
-    dataIndex: 'componentDesc',
-    key: 'componentDesc',
-    ellipsis: true,
-  },
+  // {
+  //   title: '部件备注',
+  //   dataIndex: 'componentDesc',
+  //   key: 'componentDesc',
+  //   ellipsis: true,
+  // },
   {
     title: '创建时间',
     dataIndex: 'createdAt',

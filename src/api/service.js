@@ -18,12 +18,12 @@ HTTP.interceptors.request.use(config => {
     if (notShowLoading) {
         delete config.notShowLoading;
     } else {
-        message.info({
-            content: '请求中...',
-            duration: 1
-        }).then(() => {
-
-        })
+        // message.info({
+        //     content: '请求中...',
+        //     duration: 1
+        // }).then(() => {
+        //
+        // })
     }
     return config;
 }, error => {
@@ -35,12 +35,12 @@ HTTP.interceptors.response.use((response) => {
     // 对响应数据做点什么
     if (response.status === 200) {
         if (!(response.data instanceof Blob)) {
-            message.success({
-                content: '请求成功',
-                duration: 1
-            }).then(() => {
-
-            })
+            // message.success({
+            //     content: '请求成功',
+            //     duration: 1
+            // }).then(() => {
+            //
+            // })
         }
         return response.data;
     } else {

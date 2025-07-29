@@ -149,6 +149,10 @@ function onFinish() {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
+  width: 100%;
+  .left{
+    width: 100%;
+  }
 }
 
 .container {
