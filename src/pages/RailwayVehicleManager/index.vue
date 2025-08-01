@@ -63,13 +63,13 @@ const columns = ref([
     sortDirections: ['descend', 'ascend'],
     width: 150
   },
-  // {
-  //   title: '客车备注',
-  //   dataIndex: 'vehicleDesc',
-  //   key: 'vehicleDesc',
-  //   ellipsis: true,
-  //   width: 100
-  // },
+  {
+    title: "异常数",
+    dataIndex: "abnormalCount",
+    key: "abnormalCount",
+    width: 100,
+    sorter: (a, b) => a.abnormalCount - b.abnormalCount,
+  },
   {
     title: '辆序',
     dataIndex: 'vehicleSeq',
@@ -81,7 +81,7 @@ const columns = ref([
     title: '总辆数',
     dataIndex: 'totalSequence',
     key: 'totalSequence',
-    width: 80
+    width: 80,
   },
   {
     title: '操作',
@@ -186,6 +186,15 @@ const searchData = () => {
         }
       },
   ).then((res) => {
+    // 只有abnormalCount字段，需要添加hasAbnormal字段
+    res.data.records.forEach(record => {
+      if (record.taskItem) {
+        record.taskItem.hasAbnormal = record.taskItem.abnormalCount > 0;
+        record.abnormalCount = record.taskItem.abnormalCount; // 设置异常数
+      } else {
+        record.abnormalCount = 0; // 如果没有taskItem，设置异常数为0
+      }
+    });
     dataSource.value = res.data.records
     totalData.value = res.data.total
   })
@@ -283,7 +292,8 @@ const getRowClassName = (record, index) => {
           <span style="font-size: 20px; font-weight: bold">TVDS行车入站信息</span>
           <div style="display: flex; flex-wrap: nowrap; align-items: center">
             <a-button :icon="h(PlusOutlined)" @click="newVehicleModal = true">客车入站</a-button>
-            <a-range-picker style="margin-left: 8px" v-model:value="VehicleSearchKey.dateRange" @change="searchDateChange"/>
+            <a-range-picker style="margin-left: 8px" v-model:value="VehicleSearchKey.dateRange"
+                            @change="searchDateChange"/>
             <a-select
                 v-model:value="VehicleSearchKey.vehicleInfoList"
                 :options="vehicleInfoOptions"
@@ -321,7 +331,8 @@ const getRowClassName = (record, index) => {
             <!--                </a-tooltip>-->
             <!--              </template>-->
             <!--            </a-input>-->
-            <a-button style="margin-left: 8px" type="primary" :icon="h(SearchOutlined)" @click="searchData">搜索</a-button>
+            <a-button style="margin-left: 8px" type="primary" :icon="h(SearchOutlined)" @click="searchData">搜索
+            </a-button>
           </div>
         </div>
       </template>

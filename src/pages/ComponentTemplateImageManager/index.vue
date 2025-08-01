@@ -1,7 +1,7 @@
 <script setup>
 import router from "../../router.js";
-import {onMounted, ref} from "vue";
-import {PlusOutlined} from '@ant-design/icons-vue';
+import {computed, onMounted, ref} from "vue";
+import {PlusOutlined, ArrowLeftOutlined, LeftOutlined, RightOutlined} from '@ant-design/icons-vue';
 import {SERVER_API_URL} from "../../consts.js";
 import {HTTP} from "../../api/service.js";
 import ComponentTemplateImageLabel from "./components/ComponentTemplateImageLabel.vue";
@@ -25,6 +25,9 @@ function initImageList() {
   })
 }
 
+const goBack = () => {
+  router.back();
+}
 onMounted(() => {
   componentId = router.currentRoute.value.params['componentId'];
   token.value = localStorage.getItem("token");
@@ -48,14 +51,37 @@ const handleCancel = () => {
   previewVisible.value = false;
 };
 const labelModalVisible = ref(false);
+const currentImageIndex = ref(0);
+
+const switchToImage = (index) => {
+  if (index < 0 || index >= fileList.value.length) {
+    return;
+  }
+  currentImageIndex.value = index;
+  const file = fileList.value[index];
+  previewImage.value = file.url || file.preview;
+  currentTemplateImageId.value = file.uid;
+}
+
+const showPreviousImage = () => {
+  switchToImage(currentImageIndex.value - 1);
+}
+
+const showNextImage = () => {
+  switchToImage(currentImageIndex.value + 1);
+}
+
+const isFirstImage = computed(() => currentImageIndex.value === 0);
+const isLastImage = computed(() => currentImageIndex.value === fileList.value.length - 1);
+
 const handlePreview = async file => {
   if (!file.url && !file.preview) {
     file.preview = await getBase64(file.originFileObj);
   }
-  previewImage.value = file.url || file.preview;
-  // previewVisible.value = true;
-  labelImgSrc.value = file.url;
-  currentTemplateImageId.value = file.uid
+  const index = fileList.value.findIndex(item => item.uid === file.uid);
+  if (index !== -1) {
+    switchToImage(index);
+  }
   labelModalVisible.value = true;
 };
 const handleRemove = (fileStatus) => {
@@ -107,7 +133,7 @@ const visualPromptPreview = () => {
 </script>
 
 <template>
-  <div class="clearfix">
+  <div>
     <a-upload
         multiple
         :headers="{'Token': token}"
@@ -133,6 +159,17 @@ const visualPromptPreview = () => {
         title="零部件标注"
         destroy-on-close
         :footer="null">
+      <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px; gap: 10px;">
+        <a-button @click="showPreviousImage" :disabled="isFirstImage">
+          <template #icon><LeftOutlined /></template>
+          上一张
+        </a-button>
+        <span>{{ currentImageIndex + 1 }} / {{ fileList.length }}</span>
+        <a-button @click="showNextImage" :disabled="isLastImage">
+          下一张
+          <template #icon><RightOutlined /></template>
+        </a-button>
+      </div>
       <ComponentTemplateImageLabel
           style="margin-top: 10px; width: 100%"
           :key="previewImage"
@@ -159,6 +196,18 @@ const visualPromptPreview = () => {
              destroy-on-close>
       <img alt="视觉提示模板" style="width: 100%" :src="previewVisualPromptImage"/>
     </a-modal>
+    <a-float-button
+        @click="goBack"
+        tooltip="返回"
+        :style="{
+          right: '35px',
+          top: '100px',
+        }">
+      <template #icon>
+        <ArrowLeftOutlined/>
+      </template>
+    </a-float-button>
+
   </div>
 </template>
 
