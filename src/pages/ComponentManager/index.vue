@@ -162,8 +162,8 @@ const visualPromptPreview = (record) => {
           <div
               style="display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: center;">
             <a-button @click="templateEdit(record)">模板编辑</a-button>
-            <a-divider type="vertical" style="height: 30px"/>
-            <a-button @click="visualPromptPreview(record)">预览模板</a-button>
+<!--            <a-divider type="vertical" style="height: 30px"/>-->
+<!--            <a-button @click="visualPromptPreview(record)">预览模板</a-button>-->
             <a-divider type="vertical" style="height: 30px"/>
             <a-button @click="updateComponentClick(record)">编辑配置</a-button>
             <a-divider type="vertical" style="height: 30px"/>
